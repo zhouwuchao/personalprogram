@@ -16,7 +16,6 @@
 </template>
 
 <script>
-// import { directive } from 'vue/types/umd'
 export default {
   data() {
     return {
@@ -24,38 +23,47 @@ export default {
         {
           label: '测试部',
           type: 1,
+          id: 1000,
           children: []
         }, {
           label: 'AUTO部',
           type: 1,
+          id: 2000,
           children: []
         }, {
           label: '云平台部',
+          id: 3000,
           type: 1,
         }, {
           label: '采购部',
           type: 1,
+          id: 4000,
         }, {
           label: '行政部',
           type: 1,
+          id: 5000,
         }
       ],
       data0: [
         {
           label: '软件测试部',
           type: 2,
+          id: 1100,
           children: []
         }, {
           label: '硬件测试部',
           type: 2,
+          id: 1200,
           children: []
         }, {
           label: '算法测试部',
           type: 2,
+          id: 1300,
           children: []
         }, {
           label: '测试平台开发部',
           type: 2,
+          id: 1400,
           children: []
         }
       ],
@@ -66,21 +74,30 @@ export default {
           type: 3,
           gender: '女',
           dayInCompany: '1998/01/01',
-          dep: '软件测试部',
+          secondDep: '软件测试部',
+          firstDep: '测试部',
+          id: 1101,
+          team: 1,
           children: []
         }, {
           label: '何莉',
           type: 3,
           gender: '女',
           dayInCompany: '2000/04/15',
-          dep: '软件测试部',
+          secondDep: '软件测试部',
+          firstDep: '测试部',
+          id: 1102,
+          team: 1,
           children: []
         }, {
           label: '韩美',
           type: 3,
           gender: '女',
           dayInCompany: '2004/08/09',
-          dep: '软件测试部',
+          secondDep: '软件测试部',
+          firstDep: '测试部',
+          id: 1103,
+          team: 1,
           children: []
         }
       ],
@@ -91,21 +108,30 @@ export default {
           type: 3,
           gender: '女',
           dayInCompany: '2002/03/30',
-          dep: '硬件测试部',
+          secondDep: '硬件测试部',
+          firstDep: '测试部',
+          id: 1201,
+          team: 2,
           children: []
         }, {
           label: '徐光清',
           type: 3,
           gender: '男',
           dayInCompany: '2010/03/03',
-          dep: '硬件测试部',
+          secondDep: '硬件测试部',
+          firstDep: '测试部',
+          id: 1202,
+          team: 2,
           children: []
         }, {
           label: '牛海芳',
           type: 3,
           gender: '女',
           dayInCompany: '2012/05/04',
-          dep: '硬件测试部',
+          secondDep: '硬件测试部',
+          firstDep: '测试部',
+          id: 1203,
+          team: 2,
           children: []
         }
       ],
@@ -116,21 +142,30 @@ export default {
           type: 3,
           gender: '男',
           dayInCompany: '2014/02/02',
-          dep: '算法测试部',
+          secondDep: '算法测试部',
+          firstDep: '测试部',
+          id: 1301,
+          team: 3,
           children: []
         }, {
           label: '韩志军',
           type: 3,
           gender: '女',
           dayInCompany: '1995/08/01',
-          dep: '算法测试部',
+          secondDep: '算法测试部',
+          firstDep: '测试部',
+          id: 1302,
+          team: 3,
           children: []
         }, {
           label: '孙蓉',
           type: 3,
           gender: '女',
           dayInCompany: '1998/09/01',
-          dep: '算法测试部',
+          secondDep: '算法测试部',
+          firstDep: '测试部',
+          id: 1303,
+          team: 3,
           children: []
         }
       ],
@@ -141,7 +176,10 @@ export default {
           type: 3,
           gender: '男',
           dayInCompany: '2011/02/02',
-          dep: '测试平台开发部',
+          secondDep: '测试平台开发部',
+          firstDep: '测试部',
+          id: 1401,
+          team: 4,
           children: []
         }
       ],
@@ -224,12 +262,35 @@ export default {
     },
     // 鼠标点击菜单的单个选项
     menuClick(e) {
-      console.log(e.target.innerHTML)
+      console.log(this.data)
+      // console.log(e.target.innerHTML)
       if (this.rightClickNode.type < 3) {
         this.$message({
-          message: '很抱歉,你无权操作！',
+          message: '很抱歉,你无权操作!',
           type: 'warning'
         })
+      } else {
+        if (e.target.innerHTML === '删除') {
+          // 先找到一级部门
+          var firstIndex = this.data.findIndex(ele => ele.label === this.rightClickNode.firstDep)
+          var secondIndex = this.data[firstIndex].children.findIndex(ele => ele.label === this.rightClickNode.secondDep)
+          var thirdIndex = this.data[firstIndex].children[secondIndex].children.findIndex(ele => ele.label === this.rightClickNode.label)
+          this.data[firstIndex].children[secondIndex].children.splice(thirdIndex, 1)
+          if (this.rightClickNode.team === 1) {
+            this.data1.splice(thirdIndex, 1)
+          } else if (this.rightClickNode.team === 2) {
+            this.data2.splice(thirdIndex, 1)
+          } else if (this.rightClickNode.team === 3) {
+            this.data3.splice(thirdIndex, 1)
+          } else {
+            this.data4.splice(thirdIndex, 1)
+          }
+        } else {
+          this.$message({
+            message: '很抱歉,未实现该功能!',
+            type: 'error'
+          })
+        }
       }
     }
   },
