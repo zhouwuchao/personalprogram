@@ -5,14 +5,12 @@
              :props="defaultProps"
              :render-content="renderContent"
              default-expand-all
-             @node-click="nodeClick"></el-tree>
+             @node-click="nodeClick"
+             @node-contextmenu="nodeRightClick"></el-tree>
     </div>
     <div class="right"></div>
     <ul class="menu" v-if="showMenu">
-      <li>新增</li>
-      <li>删除</li>
-      <li>移动</li>
-      <li>粘贴</li>
+      <li v-for="(val, key) in menuData" :key="key" @mouseenter="menuMouseenter" @mouseleave="menuMouseleave" @click="menuClick">{{ val }}</li>
     </ul>
   </div>
 </template>
@@ -151,13 +149,14 @@ export default {
         label: 'label',
         children: 'children'
       },
-      showMenu: false
+      menuData: ['新增', '删除', '移动', '粘贴'],
+      showMenu: false,
+      rightClickNode: null
     }
   },
   methods: {
     // 鼠标左键单击node
-    nodeClick(obj, node) {
-      console.log(obj, node)
+    nodeClick(obj) {
       if (obj.type === 1) {
         if (obj.label === '测试部') {
           obj.children.push(...this.data0)
@@ -174,60 +173,80 @@ export default {
         }
       }
     },
+    // 鼠标右击
+    nodeRightClick(e, obj) {
+      // offsetY是相对于当前每个节点的高度
+      console.log(obj)
+      // 保存当前右键点击的对象
+      this.rightClickNode = obj
+      this.showMenu = true
+      this.$nextTick(() => {
+        var menuNode = document.getElementsByClassName('menu')[0]
+        menuNode.addEventListener('mouseenter', function() {
+          this.style.cursor = 'pointer'
+        })
+        menuNode.style.left = e.clientX + 'px'
+        menuNode.style.top = e.clientY + 'px'
+      })
+    },
     // 渲染树形列表
     renderContent(h, {node}) {
-      // console.log(node)
-      // console.log(data)
-      // console.log(node.data.type)
       if (node.data.type === 1) {
         return(
           <div>
             <i class="el-icon-s-home"></i>
-            <span style="margin-left: 5px">{ node.label }</span>
+            <span>{ node.label }</span>
           </div>
         )
       } else if (node.data.type === 2) {
         return(
           <div>
             <i class="el-icon-s-flag"></i>
-            <span style="margin-left: 5px">{ node.label }</span>
+            <span>{ node.label }</span>
           </div>
         )
       } else {
         return(
           <div>
             <i class="el-icon-s-custom"></i>
-            <span style="margin-left: 5px">{ node.label }</span>
+            <span>{ node.label }</span>
           </div>
         )
+      }
+    },
+    // 鼠标进入菜单的单个选项
+    menuMouseenter(e) {
+      e.target.style.backgroundColor = '#d9d9d9'
+    },
+    // 鼠标离开菜单的单个选项
+    menuMouseleave (e) {
+      e.target.style.backgroundColor = ''
+    },
+    // 鼠标点击菜单的单个选项
+    menuClick(e) {
+      console.log(e.target.innerHTML)
+      if (this.rightClickNode.type < 3) {
+        this.$message({
+          message: '很抱歉,你无权操作！',
+          type: 'warning'
+        })
       }
     }
   },
   mounted() {
-    // var _this = this
     let leftNode = document.getElementsByClassName('left')[0]
     leftNode.addEventListener('mouseenter', function() {
       this.style.cursor = 'pointer'
-      // this.addEventListener('contextmenu', function(e) {
-      //   console.log(e)
-      //   e.preventDefault()
-      //   _this.showMenu = true
-      //   _this.$nextTick(() => {
-      //     var menuNode = document.getElementsByClassName('menu')[0]
-      //     menuNode.style.left = e.clientX + 'px'
-      //     menuNode.style.top = e.clientY + 'px'
-      //   })
-      // })
     })
+    // 左区域实现自定义右键菜单,取消默认行为
     leftNode.addEventListener('contextmenu', function(e) {
       e.preventDefault()
-      // console.log(e)
-      // _this.showMenu = true
-      // _this.$nextTick(() => {
-      //   var menuNode = document.getElementsByClassName('menu')[0]
-      //   menuNode.style.left = e.offsetX + 'px'
-      //   menuNode.style.top = e.offsetY + 'px'
-      // })
+    })
+    // 浏览器内任意一处鼠标左击,隐藏右键菜单
+    document.documentElement.addEventListener('click', () => {
+      if (this.showMenu) {
+        this.showMenu = false
+      }
     })
   }
 }
@@ -237,7 +256,7 @@ export default {
   .tree {
     margin-top: 20px;
     width: 100%;
-    position: relative;
+    // position: relative;
     border: 1px solid #ccc;
     min-height: 800px;
     .left {
@@ -245,6 +264,7 @@ export default {
       height: 800px;
       border-right: 1px solid #ccc;
       z-index: 1;
+      position: relative;
     }
     .right {
       width: 50%;
@@ -264,16 +284,7 @@ export default {
       li {
         text-align: center;
         padding: 3px 0px;
-        // border-bottom: 1px solid #ccc;
       }
-      // display: inline-block;
-      // width: 100px;
-      // box-sizing: border-box;
-      // border: 1px solid #000;
-      // span {
-      //   display: inline-block;
-      //   width: 100px;
-      // }
     }
   }
 </style>
